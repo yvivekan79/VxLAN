@@ -1,0 +1,56 @@
+# Application Configuration for VxLAN Tunnel Management System
+
+# API Configuration
+api_port: 8000
+log_level: "INFO"
+log_file: "/var/log/gind-tunnels.log"
+
+# Configuration Management
+config_dir: "/etc/gind-vxlan"
+tunnel_config_file: "/etc/gind-vxlan/tunnels.yaml"
+backup_configs: true
+auto_recover: true
+
+# Default Values
+default_mtu: 1450
+default_bridge: "br-lan"
+default_physical_interface: "eth0"
+default_vxlan_port: 4789
+
+# Security Configuration
+encryption_enabled: false
+default_encryption: "none"
+
+# Logging Configuration
+ipfix_logging: true
+console_logging: true
+log_rotation: true
+max_log_size_mb: 100
+backup_count: 5
+
+# System Configuration
+kernel_modules:
+  - "vxlan"
+  - "br_netfilter"
+
+required_commands:
+  - "ip"
+  - "bridge"
+  - "iptables"
+
+# Topology Configuration
+topology_defaults:
+  base_vni: 4096
+  vni_increment: 1
+  bridge_name: "br-lan"
+  mtu: 1450
+
+# Monitoring and Health
+health_check_interval: 30
+tunnel_status_check: true
+interface_monitoring: true
+
+# Recovery Configuration
+state_recovery_on_boot: true
+recreate_missing_interfaces: true
+validate_configuration_on_startup: true

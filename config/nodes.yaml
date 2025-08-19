@@ -1,0 +1,24 @@
+
+nodes:
+  cpe-site1:
+    node_id: "cpe-site1"
+    hostname: "192.0.2.10"
+    connection_type: "ssh"
+    port: 22
+    username: "admin"
+    ssh_key_path: "~/.ssh/cpe_key"
+    
+  cpe-site2:
+    node_id: "cpe-site2"
+    hostname: "192.0.2.20"
+    connection_type: "http"
+    port: 5000
+    api_token: "your-api-token-here"
+    
+  cpe-site3:
+    node_id: "cpe-site3"
+    hostname: "192.0.2.30"
+    connection_type: "ssh"
+    port: 22
+    username: "admin"
+    ssh_key_path: "~/.ssh/cpe_key"

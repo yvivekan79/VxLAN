@@ -1,0 +1,19 @@
+# VxLAN Tunnel Configuration File
+# This file stores persistent tunnel configurations
+
+# Example configuration structure:
+# tunnels:
+#   vxlan100:
+#     vni: 100
+#     local_ip: "192.0.2.1"
+#     remote_ip: "198.51.100.1"
+#     interface_name: "vxlan100"
+#     bridge_name: "br-lan"
+#     physical_interface: "eth0"
+#     mtu: 1450
+#     port: 4789
+#     label: "site-a-to-site-b"
+#     encryption: "none"
+#     psk_key: null
+
+tunnels: {}

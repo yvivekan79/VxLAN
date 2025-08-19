@@ -1,0 +1,34 @@
+[Unit]
+Description=VxLAN Tunnel Management Service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=exec
+User=root
+Group=root
+ExecStartPre=/usr/local/bin/python3 /opt/gind-vxlan/main.py recover
+ExecStart=/usr/local/bin/python3 /opt/gind-vxlan/main.py service
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
+KillMode=mixed
+TimeoutStopSec=30
+
+# Security settings
+NoNewPrivileges=false
+PrivateTmp=true
+ProtectSystem=false
+ProtectHome=true
+
+# Environment
+Environment=PYTHONPATH=/opt/gind-vxlan
+Environment=GIND_CONFIG_DIR=/etc/gind-vxlan
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=gind-vxlan
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,58 @@
+
+# Example VxLAN Configuration for Site A and Site B
+# This demonstrates a point-to-point VxLAN tunnel between two sites
+
+# Site A Configuration (to be used on Site A's CPE)
+site_a:
+  # Site A network details
+  wan_ip: "203.0.113.10"        # Site A's public WAN IP
+  lan_subnet: "192.168.1.0/24"  # Site A's internal LAN
+  physical_interface: "eth0"     # WAN interface on Site A CPE
+  
+  # VxLAN tunnel configuration
+  tunnel:
+    vni: 1001                   # VxLAN Network Identifier
+    local_ip: "203.0.113.10"    # Site A's WAN IP (local endpoint)
+    remote_ip: "198.51.100.20"  # Site B's WAN IP (remote endpoint)
+    interface_name: "vxlan1001"
+    bridge_name: "br-lan"
+    mtu: 1450
+    port: 4789
+    label: "site-a-to-site-b"
+
+# Site B Configuration (to be used on Site B's CPE)
+site_b:
+  # Site B network details
+  wan_ip: "198.51.100.20"       # Site B's public WAN IP
+  lan_subnet: "192.168.2.0/24"  # Site B's internal LAN
+  physical_interface: "eth0"     # WAN interface on Site B CPE
+  
+  # VxLAN tunnel configuration
+  tunnel:
+    vni: 1001                   # Same VNI as Site A
+    local_ip: "198.51.100.20"   # Site B's WAN IP (local endpoint)
+    remote_ip: "203.0.113.10"   # Site A's WAN IP (remote endpoint)
+    interface_name: "vxlan1001"
+    bridge_name: "br-lan"
+    mtu: 1450
+    port: 4789
+    label: "site-b-to-site-a"
+
+# Topology configuration for orchestrator deployment
+topology:
+  type: "point-to-point"
+  nodes:
+    site-a:
+      wan_ip: "203.0.113.10"
+      lan_subnet: "192.168.1.0/24"
+      physical_interface: "eth0"
+    site-b:
+      wan_ip: "198.51.100.20"
+      lan_subnet: "192.168.2.0/24"
+      physical_interface: "eth0"
+  
+  tunnel_config:
+    base_vni: 1001
+    bridge_name: "br-lan"
+    mtu: 1450
+    port: 4789
