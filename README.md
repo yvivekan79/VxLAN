@@ -177,13 +177,6 @@ await orchestrator.deploy_topology("hub-spoke", {
 - **Configuration Persistence**: YAML-based configuration storage
 - **Error Handling**: Comprehensive error recovery and cleanup
 
-## 🚀 Deployment on Replit
-
-The system is configured to run on Replit with:
-- Automatic dependency installation
-- Port forwarding (5000 → 80/443)
-- Web-based interface access
-- No container or virtual environment needed
 
 ## 📝 System Requirements
 
