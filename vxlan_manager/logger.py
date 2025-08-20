@@ -45,7 +45,7 @@ class IPFIXFormatter(logging.Formatter):
         
         return json.dumps(log_entry, separators=(',', ':'))
 
-def setup_logging(log_file: str = '/var/log/gind-tunnels.log', 
+def setup_logging(log_file: str = './logs/gind-tunnels.log', 
                   log_level: str = 'INFO',
                   enable_console: bool = True):
     """Setup logging configuration"""

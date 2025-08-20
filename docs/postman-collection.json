@@ -1,0 +1,286 @@
+
+{
+  "info": {
+    "name": "VxLAN Tunnel Management API",
+    "description": "Comprehensive collection for testing VxLAN tunnel management endpoints",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "{{replit-url}}",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "System Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tunnels",
+      "item": [
+        {
+          "name": "List Tunnels",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tunnels",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "tunnels"]
+            }
+          }
+        },
+        {
+          "name": "Create Basic Tunnel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vni\": 1001,\n  \"local_ip\": \"192.168.1.10\",\n  \"remote_ip\": \"192.168.2.10\",\n  \"bridge_name\": \"br-lan\",\n  \"label\": \"Basic tunnel example\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tunnels",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "tunnels"]
+            }
+          }
+        },
+        {
+          "name": "Create Layer 3 Tunnel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vni\": 1002,\n  \"local_ip\": \"192.168.1.10\",\n  \"remote_ip\": \"192.168.3.10\",\n  \"bridge_name\": \"br-lan\",\n  \"bridge_ip\": \"10.0.1.1\",\n  \"bridge_netmask\": \"24\",\n  \"label\": \"Layer 3 tunnel with routing\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tunnels",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "tunnels"]
+            }
+          }
+        },
+        {
+          "name": "Get Tunnel Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tunnels/vxlan1001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "tunnels", "vxlan1001"]
+            }
+          }
+        },
+        {
+          "name": "Delete Tunnel",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tunnels/vxlan1001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "tunnels", "vxlan1001"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Topology",
+      "item": [
+        {
+          "name": "Create Hub-Spoke Topology",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topology_type\": \"hub-spoke\",\n  \"nodes\": {\n    \"hub\": {\n      \"ip\": \"192.168.1.10\",\n      \"vni_base\": 1000\n    },\n    \"spokes\": [\n      {\"ip\": \"192.168.2.10\", \"name\": \"site-b\"},\n      {\"ip\": \"192.168.3.10\", \"name\": \"site-c\"}\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topology",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topology"]
+            }
+          }
+        },
+        {
+          "name": "Create Full-Mesh Topology",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topology_type\": \"full-mesh\",\n  \"nodes\": {\n    \"site-a\": {\"ip\": \"192.168.1.10\"},\n    \"site-b\": {\"ip\": \"192.168.2.10\"},\n    \"site-c\": {\"ip\": \"192.168.3.10\"}\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/topology",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "topology"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orchestrator",
+      "item": [
+        {
+          "name": "List Nodes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/nodes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "nodes"]
+            }
+          }
+        },
+        {
+          "name": "Add SSH Node",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"node_id\": \"site-a\",\n  \"hostname\": \"192.168.1.10\",\n  \"connection_type\": \"ssh\",\n  \"username\": \"admin\",\n  \"ssh_key_path\": \"/path/to/ssh/key\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/nodes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "nodes"]
+            }
+          }
+        },
+        {
+          "name": "Deploy Multi-Node Topology",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topology_type\": \"hub-spoke\",\n  \"node_configs\": {\n    \"hub\": {\"ip\": \"192.168.1.10\"},\n    \"spokes\": [\n      {\"ip\": \"192.168.2.10\", \"name\": \"site-b\"},\n      {\"ip\": \"192.168.3.10\", \"name\": \"site-c\"}\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orchestrator/deploy",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orchestrator", "deploy"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Advanced",
+      "item": [
+        {
+          "name": "Network Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/advanced/network-metrics/vxlan1001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "advanced", "network-metrics", "vxlan1001"]
+            }
+          }
+        },
+        {
+          "name": "Comprehensive Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/advanced/health-check",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "advanced", "health-check"]
+            }
+          }
+        },
+        {
+          "name": "Bulk Tunnel Creation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"create\",\n  \"tunnels\": [\n    {\n      \"vni\": 2001,\n      \"local_ip\": \"192.168.1.10\",\n      \"remote_ip\": \"192.168.2.10\",\n      \"bridge_name\": \"br-lan\",\n      \"label\": \"Bulk tunnel 1\"\n    },\n    {\n      \"vni\": 2002,\n      \"local_ip\": \"192.168.1.10\",\n      \"remote_ip\": \"192.168.3.10\",\n      \"bridge_name\": \"br-lan\",\n      \"label\": \"Bulk tunnel 2\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/advanced/bulk-operations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "advanced", "bulk-operations"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

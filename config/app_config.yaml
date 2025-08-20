@@ -3,11 +3,11 @@
 # API Configuration
 api_port: 8000
 log_level: "INFO"
-log_file: "/var/log/gind-tunnels.log"
+log_file: "./logs/gind-tunnels.log"
 
 # Configuration Management
-config_dir: "/etc/gind-vxlan"
-tunnel_config_file: "/etc/gind-vxlan/tunnels.yaml"
+config_dir: "./config"
+tunnel_config_file: "./config/tunnels.yaml"
 backup_configs: true
 auto_recover: true
 

@@ -1,0 +1,80 @@
+
+# Full-Mesh Topology Example
+# This configuration creates a full mesh where every site connects to every other site
+# Each site has direct Layer 3 connectivity to all other sites
+
+nodes:
+  site-a:
+    wan_ip: "192.0.2.1"
+    overlay_ip: "10.2.0.1"    # Site A IP in overlay network
+    physical_interface: "eth0"
+    description: "Site A - Main office"
+  
+  site-b:
+    wan_ip: "198.51.100.1"
+    overlay_ip: "10.2.0.2"    # Site B IP in overlay network
+    physical_interface: "eth0"
+    description: "Site B - Branch office 1"
+  
+  site-c:
+    wan_ip: "203.0.113.1"
+    overlay_ip: "10.2.0.3"    # Site C IP in overlay network
+    physical_interface: "eth0"
+    description: "Site C - Branch office 2"
+  
+  site-d:
+    wan_ip: "198.51.100.100"
+    overlay_ip: "10.2.0.4"    # Site D IP in overlay network
+    physical_interface: "eth0"
+    description: "Site D - Remote office"
+
+# Network configuration
+base_vni: 200
+bridge_name: "br-mesh"
+overlay_subnet: "10.2.0.0/24"
+mtu: 1450
+
+# Optional settings
+encryption: "none"
+auto_recover: true
+
+# CLI Commands to create this full-mesh topology:
+
+# Site A tunnels (connects to B, C, D):
+# python main.py cli tunnel create --vni 201 --local-ip 192.0.2.1 --remote-ip 198.51.100.1 --bridge-ip 10.2.0.1 --bridge-netmask 24 --label "site-a-to-site-b"
+# python main.py cli tunnel create --vni 202 --local-ip 192.0.2.1 --remote-ip 203.0.113.1 --bridge-ip 10.2.0.1 --bridge-netmask 24 --label "site-a-to-site-c"
+# python main.py cli tunnel create --vni 203 --local-ip 192.0.2.1 --remote-ip 198.51.100.100 --bridge-ip 10.2.0.1 --bridge-netmask 24 --label "site-a-to-site-d"
+
+# Site B tunnels (connects to A, C, D):
+# python main.py cli tunnel create --vni 201 --local-ip 198.51.100.1 --remote-ip 192.0.2.1 --bridge-ip 10.2.0.2 --bridge-netmask 24 --label "site-b-to-site-a"
+# python main.py cli tunnel create --vni 204 --local-ip 198.51.100.1 --remote-ip 203.0.113.1 --bridge-ip 10.2.0.2 --bridge-netmask 24 --label "site-b-to-site-c"
+# python main.py cli tunnel create --vni 205 --local-ip 198.51.100.1 --remote-ip 198.51.100.100 --bridge-ip 10.2.0.2 --bridge-netmask 24 --label "site-b-to-site-d"
+
+# Site C tunnels (connects to A, B, D):
+# python main.py cli tunnel create --vni 202 --local-ip 203.0.113.1 --remote-ip 192.0.2.1 --bridge-ip 10.2.0.3 --bridge-netmask 24 --label "site-c-to-site-a"
+# python main.py cli tunnel create --vni 204 --local-ip 203.0.113.1 --remote-ip 198.51.100.1 --bridge-ip 10.2.0.3 --bridge-netmask 24 --label "site-c-to-site-b"
+# python main.py cli tunnel create --vni 206 --local-ip 203.0.113.1 --remote-ip 198.51.100.100 --bridge-ip 10.2.0.3 --bridge-netmask 24 --label "site-c-to-site-d"
+
+# Site D tunnels (connects to A, B, C):
+# python main.py cli tunnel create --vni 203 --local-ip 198.51.100.100 --remote-ip 192.0.2.1 --bridge-ip 10.2.0.4 --bridge-netmask 24 --label "site-d-to-site-a"
+# python main.py cli tunnel create --vni 205 --local-ip 198.51.100.100 --remote-ip 198.51.100.1 --bridge-ip 10.2.0.4 --bridge-netmask 24 --label "site-d-to-site-b"
+# python main.py cli tunnel create --vni 206 --local-ip 198.51.100.100 --remote-ip 203.0.113.1 --bridge-ip 10.2.0.4 --bridge-netmask 24 --label "site-d-to-site-c"
+
+# Test connectivity (all sites can reach all other sites):
+# From Site A: ping 10.2.0.2, ping 10.2.0.3, ping 10.2.0.4
+# From Site B: ping 10.2.0.1, ping 10.2.0.3, ping 10.2.0.4
+# From Site C: ping 10.2.0.1, ping 10.2.0.2, ping 10.2.0.4
+# From Site D: ping 10.2.0.1, ping 10.2.0.2, ping 10.2.0.3
+
+# API Example for Full-Mesh deployment:
+# curl -X POST http://localhost:5000/api/v1/topology \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "topology_type": "full-mesh",
+#     "nodes": {
+#       "site-a": {"ip": "192.0.2.1", "overlay_ip": "10.2.0.1"},
+#       "site-b": {"ip": "198.51.100.1", "overlay_ip": "10.2.0.2"},
+#       "site-c": {"ip": "203.0.113.1", "overlay_ip": "10.2.0.3"},
+#       "site-d": {"ip": "198.51.100.100", "overlay_ip": "10.2.0.4"}
+#     }
+#   }'

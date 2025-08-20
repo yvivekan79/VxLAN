@@ -1,0 +1,140 @@
+
+# Dual Hub-Spoke Topology Example
+# This configuration creates two separate hub-spoke networks with hub-to-hub connectivity
+# Useful for geographically distributed networks with regional hubs
+
+# Hub 1 Network (US East)
+hub1_network:
+  hub:
+    site-hub1:
+      wan_ip: "192.0.2.1"
+      overlay_ip: "10.10.0.1"    # Hub 1 IP
+      physical_interface: "eth0"
+      description: "Hub 1 - US East"
+  
+  spokes:
+    site-east1:
+      wan_ip: "198.51.100.1"
+      overlay_ip: "10.10.0.10"   # Spoke 1 IP
+      physical_interface: "eth0"
+      description: "East Coast Branch 1"
+    
+    site-east2:
+      wan_ip: "198.51.100.2"
+      overlay_ip: "10.10.0.11"   # Spoke 2 IP
+      physical_interface: "eth0"
+      description: "East Coast Branch 2"
+
+# Hub 2 Network (US West)
+hub2_network:
+  hub:
+    site-hub2:
+      wan_ip: "203.0.113.1"
+      overlay_ip: "10.20.0.1"    # Hub 2 IP
+      physical_interface: "eth0"
+      description: "Hub 2 - US West"
+  
+  spokes:
+    site-west1:
+      wan_ip: "198.51.100.10"
+      overlay_ip: "10.20.0.10"   # Spoke 1 IP
+      physical_interface: "eth0"
+      description: "West Coast Branch 1"
+    
+    site-west2:
+      wan_ip: "198.51.100.11"
+      overlay_ip: "10.20.0.11"   # Spoke 2 IP
+      physical_interface: "eth0"
+      description: "West Coast Branch 2"
+
+# Hub-to-Hub Connection
+hub_interconnect:
+  site-hub1:
+    wan_ip: "192.0.2.1"
+    overlay_ip: "10.0.0.1"      # Inter-hub network IP
+  site-hub2:
+    wan_ip: "203.0.113.1"
+    overlay_ip: "10.0.0.2"      # Inter-hub network IP
+
+# Network configuration
+base_vni: 400
+hub1_vni_base: 410
+hub2_vni_base: 420
+interconnect_vni: 400
+bridge_name: "br-dual"
+mtu: 1450
+
+# Optional settings
+encryption: "none"
+auto_recover: true
+
+# CLI Commands to create this dual hub-spoke topology:
+
+# Hub 1 (site-hub1) tunnels:
+# To spokes:
+# python main.py cli tunnel create --vni 411 --local-ip 192.0.2.1 --remote-ip 198.51.100.1 --bridge-ip 10.10.0.1 --bridge-netmask 24 --label "hub1-to-east1"
+# python main.py cli tunnel create --vni 412 --local-ip 192.0.2.1 --remote-ip 198.51.100.2 --bridge-ip 10.10.0.1 --bridge-netmask 24 --label "hub1-to-east2"
+# To Hub 2:
+# python main.py cli tunnel create --vni 400 --local-ip 192.0.2.1 --remote-ip 203.0.113.1 --bridge-ip 10.0.0.1 --bridge-netmask 30 --label "hub1-to-hub2"
+
+# Hub 2 (site-hub2) tunnels:
+# To spokes:
+# python main.py cli tunnel create --vni 421 --local-ip 203.0.113.1 --remote-ip 198.51.100.10 --bridge-ip 10.20.0.1 --bridge-netmask 24 --label "hub2-to-west1"
+# python main.py cli tunnel create --vni 422 --local-ip 203.0.113.1 --remote-ip 198.51.100.11 --bridge-ip 10.20.0.1 --bridge-netmask 24 --label "hub2-to-west2"
+# To Hub 1:
+# python main.py cli tunnel create --vni 400 --local-ip 203.0.113.1 --remote-ip 192.0.2.1 --bridge-ip 10.0.0.2 --bridge-netmask 30 --label "hub2-to-hub1"
+
+# East Coast Spokes:
+# site-east1:
+# python main.py cli tunnel create --vni 411 --local-ip 198.51.100.1 --remote-ip 192.0.2.1 --bridge-ip 10.10.0.10 --bridge-netmask 24 --label "east1-to-hub1"
+# site-east2:
+# python main.py cli tunnel create --vni 412 --local-ip 198.51.100.2 --remote-ip 192.0.2.1 --bridge-ip 10.10.0.11 --bridge-netmask 24 --label "east2-to-hub1"
+
+# West Coast Spokes:
+# site-west1:
+# python main.py cli tunnel create --vni 421 --local-ip 198.51.100.10 --remote-ip 203.0.113.1 --bridge-ip 10.20.0.10 --bridge-netmask 24 --label "west1-to-hub2"
+# site-west2:
+# python main.py cli tunnel create --vni 422 --local-ip 198.51.100.11 --remote-ip 203.0.113.1 --bridge-ip 10.20.0.11 --bridge-netmask 24 --label "west2-to-hub2"
+
+# Connectivity:
+# East spokes (10.10.0.x) can reach:
+#   - Hub 1 (10.10.0.1) - direct
+#   - Hub 2 (10.0.0.2) - via Hub 1 routing
+#   - West spokes (10.20.0.x) - via Hub 1 → Hub 2 routing
+#
+# West spokes (10.20.0.x) can reach:
+#   - Hub 2 (10.20.0.1) - direct
+#   - Hub 1 (10.0.0.1) - via Hub 2 routing
+#   - East spokes (10.10.0.x) - via Hub 2 → Hub 1 routing
+
+# Test connectivity:
+# From site-east1: ping 10.10.0.1 (hub1), ping 10.0.0.1 (hub1-interconnect)
+# From site-west1: ping 10.20.0.1 (hub2), ping 10.0.0.2 (hub2-interconnect)
+# From hub1: ping 10.0.0.2 (hub2), ping 10.10.0.10 (east1), ping 10.10.0.11 (east2)
+# From hub2: ping 10.0.0.1 (hub1), ping 10.20.0.10 (west1), ping 10.20.0.11 (west2)
+
+# API Example for Dual Hub-Spoke deployment:
+# curl -X POST http://localhost:5000/api/v1/topology \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "topology_type": "dual-hub-spoke",
+#     "hub1": {
+#       "hub": {"ip": "192.0.2.1", "overlay_ip": "10.10.0.1"},
+#       "spokes": [
+#         {"ip": "198.51.100.1", "overlay_ip": "10.10.0.10", "name": "site-east1"},
+#         {"ip": "198.51.100.2", "overlay_ip": "10.10.0.11", "name": "site-east2"}
+#       ]
+#     },
+#     "hub2": {
+#       "hub": {"ip": "203.0.113.1", "overlay_ip": "10.20.0.1"},
+#       "spokes": [
+#         {"ip": "198.51.100.10", "overlay_ip": "10.20.0.10", "name": "site-west1"},
+#         {"ip": "198.51.100.11", "overlay_ip": "10.20.0.11", "name": "site-west2"}
+#       ]
+#     },
+#     "interconnect": {
+#       "vni": 400,
+#       "hub1_interconnect_ip": "10.0.0.1",
+#       "hub2_interconnect_ip": "10.0.0.2"
+#     }
+#   }'

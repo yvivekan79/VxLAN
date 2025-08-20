@@ -1,0 +1,68 @@
+
+# Hub-Spoke Topology Example
+# This configuration creates a hub-spoke network where site-a is the hub
+# and site-b, site-c are spokes connecting to the hub
+
+nodes:
+  site-a:
+    wan_ip: "192.0.2.1"
+    overlay_ip: "10.1.0.1"    # Hub IP in overlay network
+    physical_interface: "eth0"
+    description: "Hub site - Main office"
+  
+  site-b:
+    wan_ip: "198.51.100.1"
+    overlay_ip: "10.1.0.2"    # Spoke IP in overlay network
+    physical_interface: "eth0"
+    description: "Spoke site - Branch office 1"
+  
+  site-c:
+    wan_ip: "203.0.113.1"
+    overlay_ip: "10.1.0.3"    # Spoke IP in overlay network
+    physical_interface: "eth0"
+    description: "Spoke site - Branch office 2"
+
+hub:
+  node: "site-a"
+
+# Network configuration
+base_vni: 100
+bridge_name: "br-hub"
+overlay_subnet: "10.1.0.0/24"
+mtu: 1450
+
+# Optional settings
+encryption: "none"
+auto_recover: true
+
+# CLI Commands to create this topology:
+
+# Hub (site-a) configuration:
+# python main.py cli tunnel create --vni 101 --local-ip 192.0.2.1 --remote-ip 198.51.100.1 --bridge-ip 10.1.0.1 --bridge-netmask 24 --label "hub-to-spoke-b"
+# python main.py cli tunnel create --vni 102 --local-ip 192.0.2.1 --remote-ip 203.0.113.1 --bridge-ip 10.1.0.1 --bridge-netmask 24 --label "hub-to-spoke-c"
+
+# Spoke B (site-b) configuration:
+# python main.py cli tunnel create --vni 101 --local-ip 198.51.100.1 --remote-ip 192.0.2.1 --bridge-ip 10.1.0.2 --bridge-netmask 24 --label "spoke-b-to-hub"
+
+# Spoke C (site-c) configuration:
+# python main.py cli tunnel create --vni 102 --local-ip 203.0.113.1 --remote-ip 192.0.2.1 --bridge-ip 10.1.0.3 --bridge-netmask 24 --label "spoke-c-to-hub"
+
+# Test connectivity:
+# From Hub: ping 10.1.0.2, ping 10.1.0.3
+# From Spoke B: ping 10.1.0.1
+# From Spoke C: ping 10.1.0.1
+# Note: Spokes cannot directly reach each other (traffic goes through hub)
+
+# API Example for Hub-Spoke deployment:
+# curl -X POST http://localhost:5000/api/v1/topology \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "topology_type": "hub-spoke",
+#     "nodes": {
+#       "hub": {"ip": "192.0.2.1", "overlay_ip": "10.1.0.1", "vni_base": 100},
+#       "spokes": [
+#         {"ip": "198.51.100.1", "overlay_ip": "10.1.0.2", "name": "site-b"},
+#         {"ip": "203.0.113.1", "overlay_ip": "10.1.0.3", "name": "site-c"}
+#       ]
+#     }
+#   }'

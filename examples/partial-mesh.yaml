@@ -1,0 +1,114 @@
+
+# Partial-Mesh Topology Example
+# This configuration creates specific connections between sites
+# Useful for custom network topologies with specific connectivity requirements
+
+nodes:
+  site-a:
+    wan_ip: "192.0.2.1"
+    overlay_ip: "10.3.0.1"    # Site A IP in overlay network
+    physical_interface: "eth0"
+    description: "Site A - Main office"
+  
+  site-b:
+    wan_ip: "198.51.100.1"
+    overlay_ip: "10.3.0.2"    # Site B IP in overlay network
+    physical_interface: "eth0"
+    description: "Site B - Branch office"
+  
+  site-c:
+    wan_ip: "203.0.113.1"
+    overlay_ip: "10.3.0.3"    # Site C IP in overlay network
+    physical_interface: "eth0"
+    description: "Site C - Data center"
+  
+  site-d:
+    wan_ip: "198.51.100.100"
+    overlay_ip: "10.3.0.4"    # Site D IP in overlay network
+    physical_interface: "eth0"
+    description: "Site D - Remote office"
+
+# Define specific connections with Layer 3 connectivity
+connections:
+  - node1: "site-a"
+    node2: "site-b"
+    vni: 301
+    overlay_subnet: "10.3.0.0/24"
+    description: "Main office to branch"
+  
+  - node1: "site-b"
+    node2: "site-c"
+    vni: 302
+    overlay_subnet: "10.3.0.0/24"
+    description: "Branch to data center"
+  
+  - node1: "site-c"
+    node2: "site-d"
+    vni: 303
+    overlay_subnet: "10.3.0.0/24"
+    description: "Data center to remote office"
+  
+  - node1: "site-a"
+    node2: "site-c"
+    vni: 304
+    overlay_subnet: "10.3.0.0/24"
+    description: "Main office to data center"
+
+# Network configuration
+base_vni: 300
+bridge_name: "br-partial"
+overlay_subnet: "10.3.0.0/24"
+mtu: 1450
+
+# Optional settings
+encryption: "none"
+auto_recover: true
+
+# CLI Commands to create this partial-mesh topology:
+
+# Site A connections (to site-b and site-c):
+# python main.py cli tunnel create --vni 301 --local-ip 192.0.2.1 --remote-ip 198.51.100.1 --bridge-ip 10.3.0.1 --bridge-netmask 24 --label "site-a-to-site-b"
+# python main.py cli tunnel create --vni 304 --local-ip 192.0.2.1 --remote-ip 203.0.113.1 --bridge-ip 10.3.0.1 --bridge-netmask 24 --label "site-a-to-site-c"
+
+# Site B connections (to site-a and site-c):
+# python main.py cli tunnel create --vni 301 --local-ip 198.51.100.1 --remote-ip 192.0.2.1 --bridge-ip 10.3.0.2 --bridge-netmask 24 --label "site-b-to-site-a"
+# python main.py cli tunnel create --vni 302 --local-ip 198.51.100.1 --remote-ip 203.0.113.1 --bridge-ip 10.3.0.2 --bridge-netmask 24 --label "site-b-to-site-c"
+
+# Site C connections (to site-a, site-b, and site-d):
+# python main.py cli tunnel create --vni 304 --local-ip 203.0.113.1 --remote-ip 192.0.2.1 --bridge-ip 10.3.0.3 --bridge-netmask 24 --label "site-c-to-site-a"
+# python main.py cli tunnel create --vni 302 --local-ip 203.0.113.1 --remote-ip 198.51.100.1 --bridge-ip 10.3.0.3 --bridge-netmask 24 --label "site-c-to-site-b"
+# python main.py cli tunnel create --vni 303 --local-ip 203.0.113.1 --remote-ip 198.51.100.100 --bridge-ip 10.3.0.3 --bridge-netmask 24 --label "site-c-to-site-d"
+
+# Site D connections (to site-c only):
+# python main.py cli tunnel create --vni 303 --local-ip 198.51.100.100 --remote-ip 203.0.113.1 --bridge-ip 10.3.0.4 --bridge-netmask 24 --label "site-d-to-site-c"
+
+# Connectivity Matrix:
+# Site A can reach: Site B (direct), Site C (direct)
+# Site B can reach: Site A (direct), Site C (direct)
+# Site C can reach: Site A (direct), Site B (direct), Site D (direct)
+# Site D can reach: Site C (direct)
+
+# Test connectivity:
+# From Site A: ping 10.3.0.2 (site-b), ping 10.3.0.3 (site-c)
+# From Site B: ping 10.3.0.1 (site-a), ping 10.3.0.3 (site-c)
+# From Site C: ping 10.3.0.1 (site-a), ping 10.3.0.2 (site-b), ping 10.3.0.4 (site-d)
+# From Site D: ping 10.3.0.3 (site-c)
+
+# API Example for Partial-Mesh deployment:
+# curl -X POST http://localhost:5000/api/v1/topology \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "topology_type": "partial-mesh",
+#     "connections": [
+#       {"node1": "site-a", "node2": "site-b", "vni": 301},
+#       {"node1": "site-b", "node2": "site-c", "vni": 302},
+#       {"node1": "site-c", "node2": "site-d", "vni": 303},
+#       {"node1": "site-a", "node2": "site-c", "vni": 304}
+#     ],
+#     "nodes": {
+#       "site-a": {"ip": "192.0.2.1", "overlay_ip": "10.3.0.1"},
+#       "site-b": {"ip": "198.51.100.1", "overlay_ip": "10.3.0.2"},
+#       "site-c": {"ip": "203.0.113.1", "overlay_ip": "10.3.0.3"},
+#       "site-d": {"ip": "198.51.100.100", "overlay_ip": "10.3.0.4"}
+#     }
+#   }'
