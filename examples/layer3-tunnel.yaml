@@ -1,0 +1,44 @@
+
+# Layer 3 VxLAN Tunnel Configuration Example
+# This shows how to create tunnels with IP addresses for Layer 3 connectivity
+
+topology:
+  type: "point-to-point"
+  description: "Site-to-site Layer 3 VxLAN tunnel"
+
+# Network configuration
+network:
+  overlay_subnet: "10.0.1.0/24"
+  base_vni: 1001
+  bridge_name: "br-overlay"
+  mtu: 1450
+
+# Site configurations
+sites:
+  site-a:
+    wan_ip: "203.0.113.10"
+    overlay_ip: "10.0.1.1/24"
+    physical_interface: "eth0"
+    
+  site-b:
+    wan_ip: "198.51.100.20" 
+    overlay_ip: "10.0.1.2/24"
+    physical_interface: "eth0"
+
+# Tunnel configuration
+tunnel:
+  vni: 1001
+  port: 4789
+  encryption: "none"
+  label: "site-a-site-b-l3"
+
+# CLI commands to create this configuration:
+# Site A:
+# python main.py cli tunnel create --vni 1001 --local-ip 203.0.113.10 --remote-ip 198.51.100.20 --bridge-ip 10.0.1.1 --bridge-netmask 24
+
+# Site B: 
+# python main.py cli tunnel create --vni 1001 --local-ip 198.51.100.20 --remote-ip 203.0.113.10 --bridge-ip 10.0.1.2 --bridge-netmask 24
+
+# Test connectivity:
+# From Site A: ping 10.0.1.2
+# From Site B: ping 10.0.1.1

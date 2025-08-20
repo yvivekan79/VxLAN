@@ -15,9 +15,9 @@ logger = get_logger(__name__)
 DEFAULT_APP_CONFIG = {
     'api_port': 8000,
     'log_level': 'INFO',
-    'log_file': '/var/log/gind-tunnels.log',
-    'config_dir': '/etc/gind-vxlan',
-    'tunnel_config_file': '/etc/gind-vxlan/tunnels.yaml',
+    'log_file': './logs/gind-tunnels.log',
+    'config_dir': './config',
+    'tunnel_config_file': './config/tunnels.yaml',
     'backup_configs': True,
     'auto_recover': True,
     'default_mtu': 1450,
@@ -25,7 +25,7 @@ DEFAULT_APP_CONFIG = {
     'default_physical_interface': 'eth0'
 }
 
-def load_app_config(config_path: str = '/etc/gind-vxlan/app_config.yaml') -> Dict[str, Any]:
+def load_app_config(config_path: str = './config/app_config.yaml') -> Dict[str, Any]:
     """Load application configuration"""
     config_file = Path(config_path)
     
@@ -49,7 +49,7 @@ def load_app_config(config_path: str = '/etc/gind-vxlan/app_config.yaml') -> Dic
         logger.info("Using default configuration")
         return DEFAULT_APP_CONFIG.copy()
 
-def save_app_config(config: Dict[str, Any], config_path: str = '/etc/gind-vxlan/app_config.yaml'):
+def save_app_config(config: Dict[str, Any], config_path: str = './config/app_config.yaml'):
     """Save application configuration"""
     config_file = Path(config_path)
     config_file.parent.mkdir(parents=True, exist_ok=True)
@@ -64,7 +64,7 @@ def save_app_config(config: Dict[str, Any], config_path: str = '/etc/gind-vxlan/
         logger.error(f"Failed to save configuration: {e}")
         raise
 
-def ensure_config_directory(config_dir: str = '/etc/gind-vxlan'):
+def ensure_config_directory(config_dir: str = './config'):
     """Ensure configuration directory exists"""
     config_path = Path(config_dir)
     config_path.mkdir(parents=True, exist_ok=True)
@@ -78,7 +78,7 @@ def ensure_config_directory(config_dir: str = '/etc/gind-vxlan'):
 class ConfigManager:
     """Configuration manager class"""
     
-    def __init__(self, config_dir: str = '/etc/gind-vxlan'):
+    def __init__(self, config_dir: str = './config'):
         self.config_dir = Path(config_dir)
         self.app_config_file = self.config_dir / 'app_config.yaml'
         self.tunnel_config_file = self.config_dir / 'tunnels.yaml'

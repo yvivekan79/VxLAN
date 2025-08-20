@@ -29,6 +29,11 @@ class VxLANTunnel:
     label: str = ""
     encryption: str = "none"  # none, psk, ikev2
     psk_key: Optional[str] = None
+    # Layer 3 configuration
+    bridge_ip: Optional[str] = None  # IP address for the bridge
+    bridge_netmask: Optional[str] = None  # Netmask for the bridge (e.g., "24" or "255.255.255.0")
+    tunnel_ip: Optional[str] = None  # IP address for the tunnel interface (alternative to bridge IP)
+    tunnel_netmask: Optional[str] = None  # Netmask for tunnel interface
     
     def __post_init__(self):
         """Validate tunnel parameters"""
@@ -116,6 +121,9 @@ class VxLANManager:
             if tunnel.encryption != "none":
                 self._setup_encryption(tunnel)
             
+            # Configure IP addresses
+            self._configure_ip_addresses(tunnel)
+            
             # Store configuration
             self.tunnels[tunnel_id] = tunnel
             self.save_configuration()
@@ -144,6 +152,10 @@ class VxLANManager:
         tunnel = self.tunnels[tunnel_id]
         
         try:
+            # Remove IP addresses if configured
+            if tunnel.tunnel_ip and tunnel.tunnel_netmask:
+                run_command(f"ip addr del {tunnel.tunnel_ip}/{tunnel.tunnel_netmask} dev {tunnel.interface_name}", check=False)
+            
             # Remove from bridge
             run_command(f"ip link set {tunnel.interface_name} nomaster", check=False)
             
@@ -220,6 +232,37 @@ class VxLANManager:
             logger.info(f"PSK encryption configured for tunnel {tunnel.interface_name}")
         elif tunnel.encryption == "ikev2":
             logger.info(f"IKEv2 encryption configured for tunnel {tunnel.interface_name}")
+    
+    def _configure_ip_addresses(self, tunnel: VxLANTunnel):
+        """Configure IP addresses for Layer 3 connectivity"""
+        # Configure bridge IP (recommended approach)
+        if tunnel.bridge_ip and tunnel.bridge_netmask:
+            try:
+                # Check if bridge already has IP configured
+                ret_code, output, _ = run_command(f"ip addr show {tunnel.bridge_name}", check=False)
+                bridge_has_ip = tunnel.bridge_ip in output if ret_code == 0 else False
+                
+                if not bridge_has_ip:
+                    # Configure IP on bridge
+                    run_command(f"ip addr add {tunnel.bridge_ip}/{tunnel.bridge_netmask} dev {tunnel.bridge_name}")
+                    logger.info(f"Configured IP {tunnel.bridge_ip}/{tunnel.bridge_netmask} on bridge {tunnel.bridge_name}")
+                else:
+                    logger.info(f"Bridge {tunnel.bridge_name} already has IP configured")
+                    
+            except Exception as e:
+                logger.warning(f"Failed to configure bridge IP: {e}")
+        
+        # Configure tunnel interface IP (alternative approach)
+        elif tunnel.tunnel_ip and tunnel.tunnel_netmask:
+            try:
+                run_command(f"ip addr add {tunnel.tunnel_ip}/{tunnel.tunnel_netmask} dev {tunnel.interface_name}")
+                logger.info(f"Configured IP {tunnel.tunnel_ip}/{tunnel.tunnel_netmask} on tunnel {tunnel.interface_name}")
+            except Exception as e:
+                logger.warning(f"Failed to configure tunnel IP: {e}")
+        
+        else:
+            logger.info(f"No Layer 3 IP configuration specified for tunnel {tunnel.interface_name}")
+            logger.info("Tunnel will work for Layer 2 bridging only. Configure bridge_ip/bridge_netmask or tunnel_ip/tunnel_netmask for Layer 3 connectivity")
     
     def _cleanup_tunnel(self, tunnel: VxLANTunnel):
         """Cleanup tunnel resources on failure"""

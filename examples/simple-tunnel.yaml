@@ -1,0 +1,57 @@
+
+# Simple Point-to-Point Tunnel Example
+# Basic VxLAN tunnel between two sites with Layer 3 connectivity
+
+site_a:
+  vni: 100
+  local_ip: "192.0.2.1"      # WAN IP of site A
+  remote_ip: "198.51.100.1"  # WAN IP of site B
+  interface_name: "vxlan100"
+  bridge_name: "br-lan"
+  bridge_ip: "10.0.1.1"      # Layer 3 IP for the bridge
+  bridge_netmask: "24"       # Subnet mask for overlay network
+  physical_interface: "eth0"
+  mtu: 1450
+  port: 4789
+  label: "site-a-to-site-b"
+  encryption: "none"
+
+# CLI Commands to create this tunnel:
+# Site A:
+# python main.py cli tunnel create --vni 100 --local-ip 192.0.2.1 --remote-ip 198.51.100.1 --bridge-ip 10.0.1.1 --bridge-netmask 24 --label "site-a-to-site-b"
+
+# Site B (mirror configuration):
+site_b:
+  vni: 100
+  local_ip: "198.51.100.1"   # WAN IP of site B
+  remote_ip: "192.0.2.1"     # WAN IP of site A
+  interface_name: "vxlan100"
+  bridge_name: "br-lan"
+  bridge_ip: "10.0.1.2"      # Layer 3 IP for the bridge
+  bridge_netmask: "24"       # Subnet mask for overlay network
+  physical_interface: "eth0"
+  mtu: 1450
+  port: 4789
+  label: "site-b-to-site-a"
+  encryption: "none"
+
+# CLI Commands to create this tunnel:
+# Site B:
+# python main.py cli tunnel create --vni 100 --local-ip 198.51.100.1 --remote-ip 192.0.2.1 --bridge-ip 10.0.1.2 --bridge-netmask 24 --label "site-b-to-site-a"
+
+# Test connectivity:
+# From Site A: ping 10.0.1.2
+# From Site B: ping 10.0.1.1
+
+# API Example:
+# curl -X POST http://localhost:5000/api/v1/tunnels \
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "vni": 100,
+#     "local_ip": "192.0.2.1",
+#     "remote_ip": "198.51.100.1",
+#     "bridge_name": "br-lan",
+#     "bridge_ip": "10.0.1.1",
+#     "bridge_netmask": "24",
+#     "label": "site-a-to-site-b"
+#   }'
